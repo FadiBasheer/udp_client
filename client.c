@@ -38,7 +38,10 @@ int UDP_client() {
     // Filling server information
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(PORT);
-    servaddr.sin_addr.s_addr = INADDR_ANY;
+   // servaddr.sin_addr.s_addr = INADDR_ANY;
+
+    inet_pton(AF_INET, "192.168.0.18", &servaddr.sin_addr);
+
 
     int n, len;
 
