@@ -9,23 +9,22 @@
 
 
 #define MAX 80
-#define PORT 5002
+#define PORT 2007
 #define SA struct sockaddr
 
 
 
 // Client side implementation of UDP client-server model
 
-//#define PORT     8080
 #define MAXLINE 1024
 
 // Driver code
 int UDP_client() {
     int sockfd;
-    char buffer[MAXLINE];
-    char *hello = "Hello from client";
+    //  char buffer[MAXLINE];
     char *bye = "bye";
     struct sockaddr_in servaddr;
+
 
     // Creating socket file descriptor
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -40,23 +39,22 @@ int UDP_client() {
     servaddr.sin_port = htons(PORT);
     // servaddr.sin_addr.s_addr = INADDR_ANY;
 
-    inet_pton(AF_INET, "192.168.0.18", &servaddr.sin_addr);
-
+    inet_pton(AF_INET, "192.168.0.31", &servaddr.sin_addr);
 
     int n, len;
+    char *str;
 
-    for (int i = 0; i < 22; ++i) {
-        sendto(sockfd, (const char *) hello, strlen(hello),
+    /* Initial memory allocation */
+    str = (char *) malloc(100);
+
+    for (int i = 0; i < 5; ++i) {
+        sprintf(str, "%d %s%c", i, "hello", '\0');
+        sendto(sockfd, str, strlen(str),
                MSG_CONFIRM, (const struct sockaddr *) &servaddr,
                sizeof(servaddr));
         printf("Hello message sent.\n");
         sleep(1);
     }
-    sendto(sockfd, (const char *) bye, strlen(bye),
-           MSG_CONFIRM, (const struct sockaddr *) &servaddr,
-           sizeof(servaddr));
-    printf("bye.\n");
-
 
 //    n = recvfrom(sockfd, (char *) buffer, MAXLINE,
 //                 MSG_WAITALL, (struct sockaddr *) &servaddr,
@@ -78,6 +76,14 @@ void func(int sockfd) {
         n = 0;
         while ((buff[n++] = getchar()) != '\n');
         write(sockfd, buff, sizeof(buff));
+
+        if ((strncmp(buff, "exit", 4)) == 0) {
+            read(sockfd, buff, sizeof(buff));
+            printf("From Server : %s", buff);
+            printf("Client Exit...\n");
+            break;
+        }
+
         bzero(buff, sizeof(buff));
 
         sleep(3);
@@ -88,10 +94,6 @@ void func(int sockfd) {
         read(sockfd, buff, sizeof(buff));
         printf("From Server : %s", buff);
 
-        if ((strncmp(buff, "exit", 4)) == 0) {
-            printf("Client Exit...\n");
-            break;
-        }
         UDP_client();
     }
 }
@@ -111,7 +113,7 @@ int main() {
 
     // assign IP, PORT
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr("192.168.0.18");
+    servaddr.sin_addr.s_addr = inet_addr("192.168.0.31");
     servaddr.sin_port = htons(PORT);
 
     // connect the client socket to server socket
